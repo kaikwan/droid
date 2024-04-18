@@ -271,6 +271,20 @@ def calibrate_camera(
 
     return True
 
+def custom_replay_trajectory(env, traj_file, action_space="delta"):
+    assert action_space in ["delta"]
+    with open(traj_file) as f:
+        traj = json.load(f)
+    
+    env.reset()
+    robot_state, _ = env.get_state()[0]
+
+    for step in traj:
+        action = step["conversations"][-1]["raw_actions"]
+        if action_space == "delta":
+            robot_state = robot_state + action[:-1] # add deltas
+            robot_state[-1] = action[-1] # set gripper pos
+            env.step(robot_state)
 
 def replay_trajectory(
     env, filepath=None, assert_replayable_keys=["cartesian_position", "gripper_position", "joint_positions"]
