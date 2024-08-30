@@ -7,10 +7,15 @@ from droid.camera_utils.info import get_camera_type
 
 
 class MultiCameraWrapper:
-    def __init__(self, camera_kwargs={}):
+    def __init__(self, type="realsense", camera_kwargs={}):
         # Open Cameras #
-        zed_cameras = gather_zed_cameras()
-        self.camera_dict = {cam.serial_number: cam for cam in zed_cameras}
+
+        if type == "realsense":
+            cameras = []
+        else:
+            cameras = gather_zed_cameras()
+
+        self.camera_dict = {cam.serial_number: cam for cam in cameras}
 
         # Set Correct Parameters #
         for cam_id in self.camera_dict.keys():

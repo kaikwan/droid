@@ -38,7 +38,7 @@ class RobotEnv(gym.Env):
             self._robot = ServerInterface(ip_address=nuc_ip)
 
         # Create Cameras
-        self.camera_reader = MultiCameraWrapper(camera_kwargs)
+        self.camera_reader = MultiCameraWrapper(camera_kwargs=camera_kwargs)
         self.calibration_dict = load_calibration_info()
         self.camera_type_dict = camera_type_dict
 
