@@ -3,15 +3,15 @@ import random
 from collections import defaultdict
 
 from droid.camera_utils.camera_readers.zed_camera import gather_zed_cameras
+from droid.camera_utils.camera_readers.realsense_camera import gather_realsense_cameras
 from droid.camera_utils.info import get_camera_type
 
 
 class MultiCameraWrapper:
-    def __init__(self, type="realsense", camera_kwargs={}):
+    def __init__(self, cam_type="realsense", camera_kwargs={}):
         # Open Cameras #
-
-        if type == "realsense":
-            cameras = []
+        if cam_type == "realsense":
+            cameras = gather_realsense_cameras()
         else:
             cameras = gather_zed_cameras()
 
@@ -23,8 +23,10 @@ class MultiCameraWrapper:
             curr_cam_kwargs = camera_kwargs.get(cam_type, {})
             self.camera_dict[cam_id].set_reading_parameters(**curr_cam_kwargs)
 
+        self.cam_type = cam_type
         # Launch Camera #
-        self.set_trajectory_mode()
+
+        #self.set_trajectory_mode()
 
     ### Calibration Functions ###
     def get_camera(self, camera_id):

@@ -117,3 +117,6 @@ class RealSenseCamera:
     def disable_camera(self):
         self._pipeline.stop()
         self._config.disable_all_streams()
+
+    def set_reatings_parameters(self, **kwargs):
+        pass
