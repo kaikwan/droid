@@ -4,12 +4,15 @@ from scipy.spatial.transform import Rotation as R
 
 ### Conversions ###
 def quat_to_euler(quat, degrees=False):
-    euler = R.from_quat(quat, scalar_first=True).as_euler("xyz", degrees=degrees)
+    quat = [quat[1], quat[2], quat[3], quat[0]]
+    euler = R.from_quat(quat).as_euler("xyz", degrees=degrees)
     return euler
 
 
 def euler_to_quat(euler, degrees=False):
-    return R.from_euler("xyz", euler, degrees=degrees).as_quat(scalar_first=True)
+    quat = R.from_euler("xyz", euler, degrees=degrees).as_quat()
+    quat = [quat[3], quat[0], quat[1], quat[2]]
+
 
 
 def rmat_to_euler(rot_mat, degrees=False):
