@@ -88,7 +88,7 @@ class MultiCameraWrapper:
         random.shuffle(all_cam_ids)
 
         for cam_id in all_cam_ids:
-            if not self.camera_dict[cam_id].is_running():
+            if self.cam_type == "zed" and not self.camera_dict[cam_id].is_running():
                 continue
             data_dict, timestamp_dict = self.camera_dict[cam_id].read_camera()
 
@@ -101,3 +101,4 @@ class MultiCameraWrapper:
     def disable_cameras(self):
         for camera in self.camera_dict.values():
             camera.disable_camera()
+

@@ -51,7 +51,7 @@ def collect_trajectory(
     # Reset States #
     if controller is not None:
         controller.reset_state()
-    env.camera_reader.set_trajectory_mode()
+    # env.camera_reader.set_trajectory_mode()
 
     # Prepare Data Writers If Necesary #
     if save_filepath:
@@ -63,6 +63,21 @@ def collect_trajectory(
     num_steps = 0
     if reset_robot:
         env.reset(randomize=randomize_reset)
+
+    print("Moving to controller position")
+    for _ in range(150):
+        obs = env.get_observation()
+        action, _ = controller.forward(obs, include_info=True)
+        joint_pos = obs["robot_state"]["joint_positions"]
+
+        # clip the diff
+        diff = action[:-1] - joint_pos
+        diff = np.clip(diff, -0.1, 0.1)
+        clipped_action = joint_pos + diff
+        clipped_action = np.concatenate([clipped_action, [0]])
+
+        env.step(clipped_action)
+
 
     # Begin! #
     while True:
@@ -105,7 +120,7 @@ def collect_trajectory(
             action_info = env.create_action_dict(np.zeros_like(action))
         else:
             action_info = env.step(action)
-        action_info.update(controller_action_info)
+        # action_info.update(controller_action_info)
 
         # Save Data #
         control_timestamps["step_end"] = time_ms()
