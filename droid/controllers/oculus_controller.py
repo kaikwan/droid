@@ -150,8 +150,10 @@ class VRPolicy:
         quat_action = quat_diff(target_quat_offset, robot_quat_offset)
         euler_action = quat_to_euler(quat_action)
 
+
         # Calculate Gripper Action #
-        gripper_action = self.vr_state["gripper"] - robot_gripper
+        # gripper_action = self.vr_state["gripper"] - robot_gripper
+        gripper_action = self.vr_state["gripper"]
 
         # Calculate Desired Pose #
         target_pos = pos_action + robot_pos
