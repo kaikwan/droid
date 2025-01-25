@@ -5,7 +5,7 @@ from oculus_reader.reader import OculusReader
 
 from droid.misc.subprocess_utils import run_threaded_command
 from droid.misc.transformations import add_angles, euler_to_quat, quat_diff, quat_to_euler, rmat_to_quat
-
+from scipy.spatial.transform import Rotation as R
 
 def vec_to_reorder_mat(vec):
     X = np.zeros((len(vec), len(vec)))
@@ -158,7 +158,13 @@ class VRPolicy:
         # Calculate Desired Pose #
         target_pos = pos_action + robot_pos
         target_euler = add_angles(euler_action, robot_euler)
-        target_cartesian = np.concatenate([target_pos, target_euler])
+        r1 = R.from_quat(quat_action)
+        r2 = R.from_quat(robot_quat)
+
+        # add the rotation of the quaternion to the current rotation
+        target_quat = r2 * r1
+
+        target_cartesian = np.concatenate([target_pos, target_quat.as_quat()])
         target_gripper = self.vr_state["gripper"]
 
         # Scale Appropriately #
