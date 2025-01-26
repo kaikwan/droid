@@ -48,7 +48,9 @@ class VRPolicy:
     def reset_state(self):
         self._state = {
             "poses": {},
+            "prev_buttons": {"A": False, "B": False, "X": False, "Y": False},
             "buttons": {"A": False, "B": False, "X": False, "Y": False},
+            "processed_buttons": {"A": False, "B": False, "X": False, "Y": False},
             "movement_enabled": False,
             "controller_on": True,
         }
@@ -57,6 +59,12 @@ class VRPolicy:
         self.robot_origin = None
         self.vr_origin = None
         self.vr_state = None
+
+    def _debounce_button(self, button):
+        if not self._state["buttons"][button] and self._state["prev_buttons"][button]:
+            self._state["processed_buttons"][button] = True
+        else:
+            self._state["processed_buttons"][button] = False
 
     def _update_internal_state(self, num_wait_sec=5, hz=50):
         last_read_time = time.time()
@@ -79,7 +87,10 @@ class VRPolicy:
 
             # Save Info #
             self._state["poses"] = poses
+            self._state["prev_buttons"] = self._state["buttons"].copy()
             self._state["buttons"] = buttons
+            for button in ["A", "B", "X", "Y"]:
+                self._debounce_button(button)
             self._state["movement_enabled"] = buttons[self.controller_id.upper() + "G"]
             self._state["controller_on"] = True
             last_read_time = time.time()
@@ -186,8 +197,8 @@ class VRPolicy:
 
     def get_info(self):
         return {
-            "success": self._state["buttons"]["A"] if self.controller_id == 'r' else self._state["buttons"]["X"],
-            "failure": self._state["buttons"]["B"] if self.controller_id == 'r' else self._state["buttons"]["Y"],
+            "success": self._state["processed_buttons"]["A"] if self.controller_id == 'r' else self._state["processed_buttons"]["X"],
+            "failure": self._state["processed_buttons"]["B"] if self.controller_id == 'r' else self._state["processed_buttons"]["Y"],
             "movement_enabled": self._state["movement_enabled"],
             "controller_on": self._state["controller_on"],
         }
