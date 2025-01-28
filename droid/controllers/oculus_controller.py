@@ -27,9 +27,13 @@ class VRPolicy:
         rot_action_gain: float = 2,
         gripper_action_gain: float = 3,
         rmat_reorder: list = [-2, -1, -3, 4],
+        debounce_time: float = 1.0,
     ):
         self.oculus_reader = OculusReader()
         self.vr_to_global_mat = np.eye(4)
+        self.debounce_time = debounce_time  # Debounce time in seconds
+        self.last_button_press_time = {button: 0 for button in ["A", "B", "X", "Y"]}
+
         self.max_lin_vel = max_lin_vel
         self.max_rot_vel = max_rot_vel
         self.max_gripper_vel = max_gripper_vel
@@ -60,10 +64,18 @@ class VRPolicy:
         self.vr_origin = None
         self.vr_state = None
 
+
     def _debounce_button(self, button):
-        if not self._state["buttons"][button] and self._state["prev_buttons"][button]:
-            self._state["processed_buttons"][button] = True
-        else:
+        current_time = time.time()
+        
+        # Process button press only if the debounce time has passed since last press
+        if self._state["buttons"][button] and not self._state["prev_buttons"][button]:
+            if current_time - self.last_button_press_time[button] >= self.debounce_time:
+                self._state["processed_buttons"][button] = True
+                self.last_button_press_time[button] = current_time
+            else:
+                self._state["processed_buttons"][button] = False
+        elif not self._state["buttons"][button] and self._state["prev_buttons"][button]:
             self._state["processed_buttons"][button] = False
 
     def _update_internal_state(self, num_wait_sec=5, hz=50):
@@ -89,7 +101,7 @@ class VRPolicy:
             self._state["poses"] = poses
             self._state["prev_buttons"] = self._state["buttons"].copy()
             self._state["buttons"] = buttons
-            for button in ["A", "B", "X", "Y"]:
+            for button in ["A", "B"]:
                 self._debounce_button(button)
             self._state["movement_enabled"] = buttons[self.controller_id.upper() + "G"]
             self._state["controller_on"] = True
